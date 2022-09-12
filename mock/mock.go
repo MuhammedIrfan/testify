@@ -100,11 +100,11 @@ func (c *Call) unlock() {
 // Return specifies the return arguments for the expectation.
 //
 //    Mock.On("DoSomething").Return(errors.New("failed"))
-func (c *Call) Return(returnArguments ...interface{}) *Call {
+func (c *Call) Return(fn func(args Arguments) Arguments) *Call {
 	c.lock()
 	defer c.unlock()
 
-	c.ReturnArguments = returnArguments
+	c.ReturnArguments = fn(c.Arguments)
 
 	return c
 }
