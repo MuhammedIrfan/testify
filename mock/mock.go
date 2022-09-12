@@ -40,7 +40,7 @@ type Call struct {
 
 	// Holds the arguments that should be returned when
 	// this method is called.
-	ReturnArguments Arguments
+	ReturnArguments func(Arguments) Arguments
 
 	// Holds the caller info for the On() call
 	callerInfo []string
@@ -80,7 +80,7 @@ func newCall(parent *Mock, methodName string, callerInfo []string, methodArgumen
 		Parent:          parent,
 		Method:          methodName,
 		Arguments:       methodArguments,
-		ReturnArguments: make([]interface{}, 0),
+		ReturnArguments: nil,
 		callerInfo:      callerInfo,
 		Repeatability:   0,
 		WaitFor:         nil,
@@ -104,7 +104,7 @@ func (c *Call) Return(fn func(args Arguments) Arguments) *Call {
 	c.lock()
 	defer c.unlock()
 
-	c.ReturnArguments = fn(c.Arguments)
+	c.ReturnArguments = fn
 
 	return c
 }
@@ -539,7 +539,7 @@ func (m *Mock) MethodCalled(methodName string, arguments ...interface{}) Argumen
 	}
 
 	m.mutex.Lock()
-	returnArgs := call.ReturnArguments
+	returnArgs := call.ReturnArguments(arguments)
 	m.mutex.Unlock()
 
 	return returnArgs
